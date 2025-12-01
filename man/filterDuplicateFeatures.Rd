@@ -16,10 +16,14 @@ filterDuplicateFeatures(
 
 \item{mcol.name}{String specifying the colname for the experiment rowData}
 
-\item{summary.stat}{Function to summarize each feature (row) of the experiment}
+\item{summary.stat}{Function to summarize each feature (row) of the
+experiment}
 
-\item{selection.metric}{Function to select the row to keep when there are duplicate rows with the same mcol.name}
+\item{selection.metric}{Function to select the row to keep when there are
+duplicate rows with the same mcol.name}
 }
 \description{
-Keeps one feature from each set of duplicated features based on specified criteria, such as the feature with the highest values. Other duplicate features are removed.
+Keeps one feature from each set of duplicated features based on specified
+criteria, such as the feature with the highest values. Other duplicate
+features are removed.
 }
