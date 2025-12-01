@@ -40,7 +40,7 @@ test_that("createArbalistMAE works", {
   expect_true("GeneExpressionMatrix" %in% exp_names)
 
   expect_true("fragment_file" %in% names(colData(mae)))
-  expect_equal(colData(mae)[1, "fragment_file"], frag_file)
+  expect_equal(as.vector(colData(mae)[1, "fragment_file"]), frag_file)
 })
 
 test_that("createArbalistMAE validates input lengths", {
