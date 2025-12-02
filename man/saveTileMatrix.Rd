@@ -61,17 +61,17 @@ resulting matrix into a HDF5 file.
 }
 \details{
 We count the overlap with the start/end positions of each fragment,
-not the overlap with the fragment interval itself. This is because the
-fragment start/ends represent the transposase cleavage events, while the
-fragment interval has no real biological significance.
+  not the overlap with the fragment interval itself. This is because the
+  fragment start/ends represent the transposase cleavage events, while the
+  fragment interval has no real biological significance.
 
-If the start and end for the same fragment overlap different tiles, the
-counts for both tiles are incremented by 1. This reflects the fact that these
-positions represent distinct transposase cleavage events for different
-features. However, if the start and end for the same fragment overlap the
-same tile, the tile's count is only incremented by 1. This ensures that the
-count for each entry of \code{regions} still follows Poisson noise and avoids
-an artificial enrichment of even counts.
+  If the start and end for the same fragment overlap different tiles, the
+  counts for both tiles are incremented by 1. This reflects the fact that
+  these positions represent distinct transposase cleavage events for
+  different features. However, if the start and end for the same fragment
+  overlap the same tile, the tile's count is only incremented by 1. This
+  ensures that the count for each entry of \code{regions} still follows
+  Poisson noise and avoids an artificial enrichment of even counts.
 }
 \examples{
 # Mocking up the fragment file.

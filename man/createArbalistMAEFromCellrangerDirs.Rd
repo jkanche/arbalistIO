@@ -74,6 +74,43 @@ A \linkS4class{MultiAssayExperiment}
 Import results from scATAC-seq or multiome Cell Ranger results directories
 into a MultiAssayExperiment.
 }
+\examples{
+# Mock a Cell Ranger directory structure
+tmpdir <- tempfile()
+dir.create(tmpdir)
+sample_dir <- file.path(tmpdir, "Sample1")
+dir.create(sample_dir)
+
+# Mock files
+seq_lengths <- c(chr1 = 1000)
+mockFragmentFile(file.path(sample_dir, "fragments.tsv.gz"), 
+                 seq_lengths, 10, cell.names = LETTERS[1:5])
+
+# Create a valid mock feature matrix (H5)
+h5 <- file.path(sample_dir, "filtered_feature_bc_matrix.h5")
+rhdf5::h5createFile(h5)
+rhdf5::h5createGroup(h5, "matrix")
+rhdf5::h5write(LETTERS[1:5], h5, "matrix/barcodes", createnewfile = FALSE)
+rhdf5::h5write(as.integer(c(1,1,1,1,1)), h5, "matrix/data", createnewfile = FALSE)
+rhdf5::h5write(as.integer(c(0,0,0,0,0)), h5, "matrix/indices", createnewfile = FALSE)
+rhdf5::h5write(as.integer(c(0,1,2,3,4,5)), h5, "matrix/indptr", createnewfile = FALSE)
+rhdf5::h5write(as.integer(c(1,5)), h5, "matrix/shape", createnewfile = FALSE)
+rhdf5::h5createGroup(h5, "matrix/features")
+rhdf5::h5write("GENE1", h5, "matrix/features/id", createnewfile = FALSE)
+rhdf5::h5write("Gene1", h5, "matrix/features/name", createnewfile = FALSE)
+rhdf5::h5write("Gene Expression", h5, "matrix/features/feature_type", createnewfile = FALSE)
+rhdf5::h5write("chr1:1-100", h5, "matrix/features/interval", createnewfile = FALSE)
+rhdf5::h5write("Genome1", h5, "matrix/features/genome", createnewfile = FALSE)
+
+# Create MAE (Using SerialParam for safety in example)
+mae <- createArbalistMAEFromCellrangerDirs(
+    cellranger.res.dirs = c(Sample1 = sample_dir),
+    output.dir = tmpdir,
+    seq.lengths = seq_lengths,
+    BPPARAM = BiocParallel::SerialParam()
+)
+
+}
 \author{
 Natalie Fox
 }

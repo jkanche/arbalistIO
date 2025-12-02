@@ -68,22 +68,20 @@
 #' @importFrom utils read.delim
 #' @importFrom rhdf5 h5createFile h5createGroup
 #' @importFrom HDF5Array H5SparseMatrix
-saveRegionMatrix <- function(
-  fragment.file,
-  output.file,
-  output.name,
-  regions,
-  barcodes = NULL,
-  compress.level = 6,
-  chunk.dim = 20000
-) {
+saveRegionMatrix <- function(fragment.file,
+                             output.file,
+                             output.name,
+                             regions,
+                             barcodes = NULL,
+                             compress.level = 6,
+                             chunk.dim = 20000) {
   if (!file.exists(output.file)) {
     h5createFile(output.file)
   }
   h5createGroup(output.file, output.name)
-
+  
   sanitized <- .sanitizeRegions(regions)
-
+  
   output <- fragments_to_regions(
     fragment_file = fragment.file,
     output_file = output.file,
@@ -97,13 +95,13 @@ saveRegionMatrix <- function(
     deflate_level = compress.level,
     chunk_dim = chunk.dim
   )
-
+  
   obs <- H5SparseMatrix(output.file, output.name)
   if (is.null(barcodes)) {
     barcodes <- output
   }
   colnames(obs) <- barcodes
-
+  
   obs
 }
 
@@ -118,26 +116,24 @@ saveRegionMatrix <- function(
   }
   solo <- as(slice(coverage(regions), lower = 1, upper = 1), "GRanges") # only considering intervals with coverage of exactly 1.
   overlap <- findOverlaps(solo, regions, select = "first")
-
+  
   if (!decompose) {
     return(list(regions = solo, ids = overlap))
   }
-
+  
   seqnames <- as.character(seqnames(solo))
   by_ids <- split(overlap - 1L, seqnames) # get to 0-based indices
   starts <- split(start(solo) - 1L, seqnames) # get to 0-based starts.
   ends <- split(end(solo), seqnames) # leave as open ends.
-
+  
   for (s in names(by_ids)) {
     o <- order(starts[[s]])
     starts[[s]] <- starts[[s]][o]
     ends[[s]] <- ends[[s]][o]
     by_ids[[s]] <- by_ids[[s]][o]
   }
-
-  list(
-    ids = by_ids,
-    starts = starts,
-    ends = ends
-  )
+  
+  list(ids = by_ids,
+       starts = starts,
+       ends = ends)
 }

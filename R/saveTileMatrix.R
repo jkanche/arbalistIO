@@ -27,17 +27,17 @@
 #'   use.
 #'
 #' @details We count the overlap with the start/end positions of each fragment,
-#' not the overlap with the fragment interval itself. This is because the
-#' fragment start/ends represent the transposase cleavage events, while the
-#' fragment interval has no real biological significance.
+#'   not the overlap with the fragment interval itself. This is because the
+#'   fragment start/ends represent the transposase cleavage events, while the
+#'   fragment interval has no real biological significance.
 #'
-#' If the start and end for the same fragment overlap different tiles, the
-#' counts for both tiles are incremented by 1. This reflects the fact that these
-#' positions represent distinct transposase cleavage events for different
-#' features. However, if the start and end for the same fragment overlap the
-#' same tile, the tile's count is only incremented by 1. This ensures that the
-#' count for each entry of \code{regions} still follows Poisson noise and avoids
-#' an artificial enrichment of even counts.
+#'   If the start and end for the same fragment overlap different tiles, the
+#'   counts for both tiles are incremented by 1. This reflects the fact that
+#'   these positions represent distinct transposase cleavage events for
+#'   different features. However, if the start and end for the same fragment
+#'   overlap the same tile, the tile's count is only incremented by 1. This
+#'   ensures that the count for each entry of \code{regions} still follows
+#'   Poisson noise and avoids an artificial enrichment of even counts.
 #'
 #' @return A sparse matrix is saved to \code{output.file} using the 10X HDF5
 #'   format. A list is returned containing:
@@ -66,30 +66,33 @@
 #' @importFrom GenomicRanges GRanges
 #' @importFrom GenomeInfoDb Seqinfo
 #' @importFrom IRanges IRanges
-saveTileMatrix <- function(
-  fragment.file,
-  output.file,
-  output.name,
-  seq.lengths = NULL,
-  barcodes = NULL,
-  tile.size = 500,
-  compress.level = 6,
-  chunk.dim = 20000
-) {
+saveTileMatrix <- function(fragment.file,
+                           output.file,
+                           output.name,
+                           seq.lengths = NULL,
+                           barcodes = NULL,
+                           tile.size = 500,
+                           compress.level = 6,
+                           chunk.dim = 20000) {
   if (is.null(seq.lengths)) {
     # Obtaining the sequence lengths, if they weren't already available.
     info <- .processFragmentHeader(fragment.file)
+    if (!'reference_path' %in% names(info)) {
+      stop(
+        'the fragment file header does not have reference_path information so please specify the seq.lengths argument'
+      )
+    }
     fai <- file.path(info$reference_path, "fasta", "genome.fa.fai")
     fai.info <- read.delim(fai, sep = "\t", header = FALSE)[, 1:2]
     seq.lengths <- fai.info[, 2]
     names(seq.lengths) <- fai.info[, 1]
   }
-
+  
   if (!file.exists(output.file)) {
     h5createFile(output.file)
   }
   h5createGroup(output.file, output.name)
-
+  
   output <- fragments_to_tiles(
     fragment_file = fragment.file,
     tile_size = tile.size,
@@ -101,24 +104,20 @@ saveTileMatrix <- function(
     deflate_level = compress.level,
     chunk_dim = chunk.dim
   )
-
+  
   nbins <- ceiling(seq.lengths / tile.size)
   seqs <- rep(names(seq.lengths), nbins)
   ends <- sequence(nbins) * tile.size
   starts <- ends - tile.size + 1L
   ends <- pmin(ends, rep(seq.lengths, nbins))
-  tiles <- GRanges(
-    seqs,
-    IRanges(starts, ends),
-    seqinfo = Seqinfo(names(seq.lengths), seq.lengths)
-  )
-
+  tiles <- GRanges(seqs, IRanges(starts, ends), seqinfo = Seqinfo(names(seq.lengths), seq.lengths))
+  
   counts <- H5SparseMatrix(output.file, output.name)
   if (is.null(barcodes)) {
     barcodes <- output
   }
   colnames(counts) <- barcodes
-
+  
   list(tiles = tiles, counts = counts)
 }
 

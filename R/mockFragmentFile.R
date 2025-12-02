@@ -21,7 +21,7 @@
 #'
 #' @return A fragment file is created at \code{output.file}. \code{NULL} is
 #'   invisibly returned.
-#' 
+#'
 #' @examples
 #' temp <- tempfile(fileext=".fragments.gz")
 #' mockFragmentFile(temp, c(chrA=1000, chrB=200000, chrC=200),
@@ -35,25 +35,20 @@
 #' @importFrom stats runif
 #' @importFrom utils write.table
 #' @export
-mockFragmentFile <- function(
-  output.file,
-  seq.lengths,
-  num.fragments,
-  cell.names,
-  width.range = c(10, 1000),
-  read.range = c(1, 10),
-  comments = NULL,
-  compressed = TRUE
-) {
+mockFragmentFile <- function(output.file,
+                             seq.lengths,
+                             num.fragments,
+                             cell.names,
+                             width.range = c(10, 1000),
+                             read.range = c(1, 10),
+                             comments = NULL,
+                             compressed = TRUE) {
   number <- num.fragments * length(cell.names)
   seq <- sample(names(seq.lengths), number, replace = TRUE)
   limits <- (seq.lengths - 1L)[seq] # avoid overlapping the end position.
   starts <- floor(runif(number) * limits)
-  ends <- pmin(
-    starts + floor(runif(number, width.range[1], width.range[2])),
-    limits
-  )
-
+  ends <- pmin(starts + floor(runif(number, width.range[1], width.range[2])), limits)
+  
   o <- order(factor(seq, names(seq.lengths)), starts)
   df <- data.frame(
     seq,
@@ -63,14 +58,14 @@ mockFragmentFile <- function(
     count = floor(runif(number, read.range[1], read.range[2]))
   )
   df <- df[o, ]
-
+  
   handle <- if (compressed) {
     gzfile(output.file, open = "wb")
   } else {
     file(output.file, open = "wb")
   }
   on.exit(close(handle))
-
+  
   if (length(comments)) {
     writeLines(con = handle, paste0("# ", comments), sep = "\n")
   }
@@ -83,6 +78,6 @@ mockFragmentFile <- function(
     quote = FALSE,
     eol = "\n"
   )
-
+  
   invisible(NULL)
 }
